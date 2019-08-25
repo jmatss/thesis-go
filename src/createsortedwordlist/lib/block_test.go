@@ -58,7 +58,7 @@ func getExpectedHashDigests() []hashDigest {
 		"6dc565a0c9da7d4fde332defc3d40603",
 		"deac643a731dc1820438d7d779a57023",
 		"736754e20944459aab5326897f3d3f1b",
-		"21e32cb8411cfaaa646ee8d75513e18c",
+		"15e0b103b82b8ab3bbf58f8059ad489d",
 	}
 	expectedHashDigests := make([]hashDigest, len(expectedHashes))
 	var tmpBytes []byte

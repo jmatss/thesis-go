@@ -30,7 +30,7 @@ func (b *Block) createSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 		}
 	}()
 	for i := startSubBlock; i <= endSubBlock; i++ {
-		serialNumber := fmt.Sprintf("%016d\n", i)
+		serialNumber := fmt.Sprintf("%016x\n", i)
 		b.Hashes[i-startBlock] = md5.Sum([]byte(serialNumber))
 	}
 	finished <- nil
