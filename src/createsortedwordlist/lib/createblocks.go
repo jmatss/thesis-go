@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"strconv"
@@ -31,7 +32,7 @@ func CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize int, f
 		startTime = time.Now()
 		err := blocks[i].writeToFile(filename+strconv.Itoa(i), bufferSize)
 		if err != nil {
-			panic(err) // TODO: take a look at this
+			panic(fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err))
 		}
 		log.Printf("Block written to file: %v", time.Since(startTime))
 
@@ -62,7 +63,7 @@ func CreateBlock(id, start, end, amountOfThreads int) *Block {
 	for i := 0; i < amountOfThreads; i++ {
 		err := <-finished
 		if err != nil {
-			panic(err) // TODO: better handling of error
+			panic(fmt.Errorf("unable to create block %d: %v", id, err))
 		}
 	}
 

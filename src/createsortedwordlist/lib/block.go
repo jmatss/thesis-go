@@ -8,16 +8,14 @@ import (
 )
 
 const (
-	/*
-		The md5 digest is 16 bytes. Compare the last 6 bytes (CompLength) that starts at byte 10 (CompStart)
-	*/
+	/* The md5 digest is 16 bytes. Compare the last 6 bytes (CompLength) that starts at byte 10 (CompStart) */
 	CompStart  = 10
 	CompLength = 6
 )
 
 type hashDigest [md5.Size]byte
 
-type Block struct { // implements sort.Interface
+type Block struct {
 	id     int
 	start  int
 	end    int
@@ -39,14 +37,10 @@ func (b *Block) createSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 
 func (b *Block) writeToFile(filename string, bufferSize int) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	defer func() {
-		if err := file.Close(); err != nil {
-			// TODO: do something
-		}
-	}()
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	writer := bufio.NewWriterSize(file, bufferSize)
 	for i := 0; i < len(b.Hashes); i++ {
@@ -61,6 +55,7 @@ func (b *Block) writeToFile(filename string, bufferSize int) error {
 	return nil
 }
 
+// sort.Interface
 func (b Block) Len() int {
 	return len(b.Hashes)
 }
