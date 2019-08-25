@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"os"
+	"sort"
 )
 
 const (
@@ -40,7 +41,10 @@ func (b *Block) writeToFile(filename string, bufferSize int) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		file.Close()
+		b.clear() // remove reference of Hashes so that it can be garbage collected
+	}()
 
 	writer := bufio.NewWriterSize(file, bufferSize)
 	for i := 0; i < len(b.Hashes); i++ {
@@ -53,6 +57,15 @@ func (b *Block) writeToFile(filename string, bufferSize int) error {
 		return err
 	}
 	return nil
+}
+
+func (b *Block) Sort() {
+	// TODO: make sort parallel
+	sort.Sort(sort.Reverse(b))
+}
+
+func (b *Block) clear() {
+	b.Hashes = nil // free memory
 }
 
 // sort.Interface

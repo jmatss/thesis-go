@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"log"
-	"sort"
 	"strconv"
 	"time"
 )
@@ -25,8 +24,7 @@ func CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize int, f
 		log.Printf("Create block: %v", time.Since(startTime))
 
 		startTime = time.Now()
-		// TODO: make sort parallel
-		sort.Sort(sort.Reverse(*blocks[i]))
+		blocks[i].Sort()
 		log.Printf("Block sorted: %v", time.Since(startTime))
 
 		startTime = time.Now()
