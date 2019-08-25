@@ -19,9 +19,10 @@ func TestCreateBlocks(t *testing.T) {
 	amountOfBlocks := 1
 	amountOfThreads := 4
 	bufferSize := 1024
-	blocks := CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename)
-	totLen := 0
 
+	blocks := CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename)
+
+	totLen := 0
 	for id, block := range blocks {
 		b := *block
 		totLen += len(b.Hashes)
@@ -45,18 +46,13 @@ func TestCreateBlocks(t *testing.T) {
 		t.Errorf("couldn't open file \"%s\"", filename)
 		return
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			// TODO: do something?
-		}
-	}()
+	defer file.Close()
 
 	stat, err := file.Stat()
 	if err != nil {
 		t.Errorf("couldn't get stat of file \"%s\"", filename)
 		return
 	}
-
 	if int64(end-start+1)*md5.Size != stat.Size() {
 		t.Errorf("length of file \"%s\" on disk is incorrect: "+
 			"expected %d, got %d", filename, int64(end-start+1)*md5.Size, stat.Size())

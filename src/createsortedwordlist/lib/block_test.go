@@ -14,7 +14,9 @@ func TestCreateSubBlock(t *testing.T) {
 	end := 10
 	b := Block{0, start, end, make([]hashDigest, end-start+1)}
 	finished := make(chan error)
+
 	go b.createSubBlock(start, end, start, finished)
+
 	err := <-finished
 	if err != nil {
 		t.Errorf("received error over chan from Block.createSubBlock: %+v", err)
