@@ -11,7 +11,7 @@ import (
 func TestCreateBlocks(t *testing.T) {
 	// remove list from previous test if needed
 	filename := "D:\\listdir\\testlist"
-	err := os.Remove(filename + strconv.Itoa(0))
+	os.Remove(filename + strconv.Itoa(0))
 
 	/*
 		Test to make sure that the file is created correctly, that the size is correct
@@ -30,7 +30,11 @@ func TestCreateBlocks(t *testing.T) {
 		t.Errorf("couldn't open file \"%s\"", filename)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		file.Close()
+		filename := "D:\\listdir\\testlist"
+		os.Remove(filename + strconv.Itoa(0))
+	}()
 
 	stat, err := file.Stat()
 	if err != nil {
