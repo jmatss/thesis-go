@@ -1,20 +1,20 @@
 package createblocks
 
-type PriorityQueue []hashDigest
+type priorityQueue []hashDigest
 
-func (pq *PriorityQueue) Push(digest interface{}) {
+func (pq *priorityQueue) Push(digest interface{}) {
 	*pq = append(*pq, digest.(hashDigest))
 }
-func (pq *PriorityQueue) Pop() interface{} {
+func (pq *priorityQueue) Pop() interface{} {
 	length := len(*pq)
 	result := (*pq)[length-1]
 	*pq = (*pq)[:length-2]
 	return result
 }
-func (pq PriorityQueue) Len() int {
+func (pq priorityQueue) Len() int {
 	return len(pq)
 }
-func (pq PriorityQueue) Less(i, j int) bool {
+func (pq priorityQueue) Less(i, j int) bool {
 	for k := CompStart; k < CompStart+CompLength; k++ {
 		currentI, currentJ := pq[i][k], pq[j][k]
 		if currentI < currentJ {
@@ -25,6 +25,6 @@ func (pq PriorityQueue) Less(i, j int) bool {
 	}
 	return false // equal
 }
-func (pq *PriorityQueue) Swap(i, j int) {
+func (pq *priorityQueue) Swap(i, j int) {
 	(*pq)[i], (*pq)[j] = (*pq)[j], (*pq)[i]
 }
