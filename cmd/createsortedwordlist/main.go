@@ -11,7 +11,7 @@ const (
 	MaxAmountOfConcurrentThreads = 8
 	AmountOfBlocks               = 1
 	Filename                     = "d:\\listdir\\list"
-	BufferSize                   = 1000000
+	BlockBufferSize              = 1e6 // max buffer size for block(s)
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		Generate, sort and write hashes of the block to separate files
 	*/
 	startTime := time.Now()
-	blocks, err := createblocks.Create(start, end, AmountOfBlocks, MaxAmountOfConcurrentThreads, BufferSize, Filename)
+	blocks, err := createblocks.Create(start, end, AmountOfBlocks, MaxAmountOfConcurrentThreads, BlockBufferSize, Filename)
 	if err != nil {
 		log.Fatalf("could not create blocks: %v", err)
 	}
@@ -36,7 +36,7 @@ func main() {
 		STAGE 2 - Merge the blocks in to one single sorted file
 	*/
 	startTime = time.Now()
-	if err := createblocks.Merge(blocks, MaxAmountOfConcurrentThreads, Filename); err != nil {
+	if err := createblocks.Merge(blocks, MaxAmountOfConcurrentThreads, BlockBufferSize, Filename); err != nil {
 		log.Fatalf("could not merge blocks: %v", err)
 	}
 	log.Printf("all blocks merged, elapsed time: %v\n", time.Since(startTime))
