@@ -1,4 +1,4 @@
-package lib
+package createblocks
 
 import (
 	"bufio"

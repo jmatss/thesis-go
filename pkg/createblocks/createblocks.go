@@ -1,4 +1,4 @@
-package lib
+package createblocks
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // TODO: make new function that combines this function and createBlock
-func CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) []*Block {
+func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) []*Block {
 	blocks := make([]*Block, amountOfBlocks)
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
 	totTime := time.Now()

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"createsortedwordlist/lib"
 	"fmt"
+	"pkg/createblocks"
 	"time"
 )
 
@@ -17,6 +17,6 @@ func main() {
 	start := 0
 	end := 0xffffff
 	startTime := time.Now()
-	blocks := lib.CreateBlocks(start, end, AmountOfBlocks, MaxAmountOfConcurrentThreads, BufferSize, Filename)
+	blocks := createblocks.Create(start, end, AmountOfBlocks, MaxAmountOfConcurrentThreads, BufferSize, Filename)
 	fmt.Printf("%v (happy compiler:%p)\n", time.Since(startTime), blocks)
 }

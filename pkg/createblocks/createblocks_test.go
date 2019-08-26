@@ -1,4 +1,4 @@
-package lib
+package createblocks
 
 import (
 	"crypto/md5"
@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestCreateBlocks(t *testing.T) {
+func TestCreate(t *testing.T) {
 	// remove list from previous test if needed
 	filename := "D:\\listdir\\testlist"
 	os.Remove(filename + strconv.Itoa(0))
@@ -22,7 +22,7 @@ func TestCreateBlocks(t *testing.T) {
 	amountOfThreads := 4
 	bufferSize := 1024
 
-	CreateBlocks(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename)
+	Create(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename)
 
 	filename = filename + strconv.Itoa(0)
 	file, err := os.Open(filename)
