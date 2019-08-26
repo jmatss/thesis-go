@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"pkg/createblocks"
+	"github.com/jmatss/thesis-go/pkg/createblocks"
 	"time"
 )
 
