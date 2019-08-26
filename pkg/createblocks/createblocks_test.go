@@ -22,7 +22,9 @@ func TestCreate(t *testing.T) {
 	amountOfThreads := 4
 	bufferSize := 1024
 
-	Create(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename)
+	if _, err := Create(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename); err != nil {
+		t.Errorf("could not create blocks: %v", err)
+	}
 
 	filename = filename + strconv.Itoa(0)
 	file, err := os.Open(filename)

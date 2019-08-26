@@ -8,7 +8,9 @@ import (
 )
 
 // TODO: make new function that combines this function and createBlock
-func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) []*Block {
+// TODO: return error to main instead of panic
+// TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time
+func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) ([]*Block, error) {
 	blocks := make([]*Block, amountOfBlocks)
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
 	totTime := time.Now()
@@ -30,7 +32,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 		startTime = time.Now()
 		err := blocks[i].writeToFile(filename+strconv.Itoa(i), bufferSize)
 		if err != nil {
-			panic(fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err))
+			return nil, fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err)
 		}
 		log.Printf("Block written to file: %v", time.Since(startTime))
 
@@ -38,7 +40,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 	}
 	log.Printf("Tot elapsed time: %v", time.Since(totTime))
 
-	return blocks
+	return blocks, nil
 }
 
 func CreateBlock(id, start, end, amountOfThreads int) *Block {
