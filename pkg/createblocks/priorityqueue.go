@@ -1,22 +1,41 @@
 package createblocks
 
-type priorityQueue []hashDigest
+import "sync"
 
-func (pq *priorityQueue) Push(digest interface{}) {
-	*pq = append(*pq, digest.(hashDigest))
+type syncPriorityQueue struct {
+	Hashes []hashDigest
+	mut    sync.Mutex
 }
-func (pq *priorityQueue) Pop() interface{} {
-	length := len(*pq)
-	result := (*pq)[length-1]
-	*pq = (*pq)[:length-2]
+
+func (pq *syncPriorityQueue) Push(digest interface{}) {
+	pq.mut.Lock()
+	defer pq.mut.Unlock()
+
+	hashes := (*pq).Hashes
+	hashes = append(hashes, digest.(hashDigest))
+}
+func (pq *syncPriorityQueue) Pop() interface{} {
+	pq.mut.Lock()
+	defer pq.mut.Unlock()
+
+	hashes := (*pq).Hashes
+	length := len(hashes)
+	result := (hashes)[length-1]
+	hashes = (hashes)[:length-2]
 	return result
 }
-func (pq priorityQueue) Len() int {
-	return len(pq)
+func (pq syncPriorityQueue) Len() int {
+	pq.mut.Lock()
+	defer pq.mut.Unlock()
+
+	return len(pq.Hashes)
 }
-func (pq priorityQueue) Less(i, j int) bool {
+func (pq syncPriorityQueue) Less(i, j int) bool {
+	pq.mut.Lock()
+	defer pq.mut.Unlock()
+
 	for k := CompStart; k < CompStart+CompLength; k++ {
-		currentI, currentJ := pq[i][k], pq[j][k]
+		currentI, currentJ := pq.Hashes[i][k], pq.Hashes[j][k]
 		if currentI < currentJ {
 			return true
 		} else if currentI > currentJ {
@@ -25,6 +44,10 @@ func (pq priorityQueue) Less(i, j int) bool {
 	}
 	return false // equal
 }
-func (pq *priorityQueue) Swap(i, j int) {
-	(*pq)[i], (*pq)[j] = (*pq)[j], (*pq)[i]
+func (pq *syncPriorityQueue) Swap(i, j int) {
+	pq.mut.Lock()
+	defer pq.mut.Unlock()
+
+	hashes := (*pq).Hashes
+	hashes[i], hashes[j] = hashes[j], hashes[i]
 }
