@@ -10,7 +10,8 @@ import (
 const WriterBufferSize = 1000
 
 func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename string) error {
-	pq := syncPriorityQueue{Hashes: make([]hashDigest, concurrentThreads)}
+	p := make(priorityQueue, concurrentThreads)
+	pq := syncPriorityQueue{pq: &p}
 	MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize, filename, pq)
 
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
