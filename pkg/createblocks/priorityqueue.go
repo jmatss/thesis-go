@@ -52,10 +52,7 @@ func (spq *syncPriorityQueue) Pop() interface{} {
 	spq.mut.Lock()
 	defer spq.mut.Unlock()
 
-	length := len(*spq.pq)
-	result := (*spq.pq)[length-1]
-	*spq.pq = (*spq.pq)[:length-2]
-	return result
+	return heap.Pop(spq.pq)
 }
 
 /*
