@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
+// Creates blocks and returns the amount of blocks created if they are created successfully
 // TODO: make new function that combines this function and createBlock
-// TODO: return error to main instead of panic
 // TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time
 func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) (int, error) {
 	blocks := make([]*Block, amountOfBlocks)
@@ -46,8 +46,12 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 func CreateBlock(id, start, end, amountOfThreads int) *Block {
 	block := Block{id, start, end, make([]hashDigest, end-start+1)}
 
-	hashesPerThread := (end - start + 1) / amountOfThreads
 	finished := make(chan error)
+	hashesPerThread := ((end - start + 1) / amountOfThreads) - 1
+	// if there are fewer hashes than threads, only spawn threads so that they get one hash each
+	if hashesPerThread <= 0 {
+		amountOfThreads = end - start + 1
+	}
 
 	currentStart := start
 	for i := 0; i < amountOfThreads; i++ {

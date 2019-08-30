@@ -1,27 +1,40 @@
 package createblocks
 
-import (
-	"container/heap"
-	"sync"
-)
+// TODO: Make priorityqueue synchronized and blocking!
 
-type priorityQueue []hashDigest
+type hashDigestWithID struct {
+	Id     int
+	Digest hashDigest
+}
+
+type priorityQueue []*hashDigestWithID
 
 func (pq *priorityQueue) Push(digest interface{}) {
-	*pq = append(*pq, digest.(hashDigest))
+	*pq = append(*pq, digest.(*hashDigestWithID))
 }
+
 func (pq *priorityQueue) Pop() interface{} {
 	length := len(*pq)
 	result := (*pq)[length-1]
-	*pq = (*pq)[:length-2]
+	*pq = (*pq)[:length-1]
 	return result
 }
+
 func (pq priorityQueue) Len() int {
 	return len(pq)
 }
+
 func (pq priorityQueue) Less(i, j int) bool {
+	// Treat an empty/nil *hashDigestWithID as greater than,
+	// this allows non empty hashDigestWithID to be inserted before empty ones.
+	if pq[i] == nil {
+		return false
+	} else if pq[j] == nil {
+		return true
+	}
+
 	for k := CompStart; k < CompStart+CompLength; k++ {
-		currentI, currentJ := pq[i][k], pq[j][k]
+		currentI, currentJ := (*pq[i]).Digest[k], (*pq[j]).Digest[k]
 		if currentI < currentJ {
 			return true
 		} else if currentI > currentJ {
@@ -30,49 +43,7 @@ func (pq priorityQueue) Less(i, j int) bool {
 	}
 	return false // equal
 }
+
 func (pq priorityQueue) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
-}
-
-/*
-	A synchronized pq that wraps a regular pq with a lock
-*/
-type syncPriorityQueue struct {
-	pq  *priorityQueue
-	mut sync.Mutex
-}
-
-func (spq *syncPriorityQueue) Push(digest interface{}) {
-	spq.mut.Lock()
-	defer spq.mut.Unlock()
-
-	heap.Push(spq.pq, digest)
-}
-func (spq *syncPriorityQueue) Pop() interface{} {
-	spq.mut.Lock()
-	defer spq.mut.Unlock()
-
-	return heap.Pop(spq.pq)
-}
-
-/*
-	As long as the Len, Less and Swap functions are called from the Push and Pop functions,
-	there are no reason to lock them since they are already indirectly locked
-*/
-func (spq syncPriorityQueue) Len() int {
-	return len(*spq.pq)
-}
-func (spq syncPriorityQueue) Less(i, j int) bool {
-	for k := CompStart; k < CompStart+CompLength; k++ {
-		currentI, currentJ := (*spq.pq)[i][k], (*spq.pq)[j][k]
-		if currentI < currentJ {
-			return true
-		} else if currentI > currentJ {
-			return false
-		}
-	}
-	return false // equal
-}
-func (spq syncPriorityQueue) Swap(i, j int) {
-	(*spq.pq)[i], (*spq.pq)[j] = (*spq.pq)[j], (*spq.pq)[i]
 }

@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 )
-
-const BufferSize = 16384 / md5.Size // 16KB
 
 // Wrapping a buffered reader that reads and buffers a file in reverse.
 // This lets on truncate the file after reading in hashes.
@@ -28,14 +27,14 @@ type reverseFileReader struct {
 // position: current index of the buffer where the next "Read" will read from.
 // limit: index of the last valid item in the buffer.
 // capacity: max capacity of the buffer.
-func NewReverseFileReader(id int, filename string) *reverseFileReader {
+func NewReverseFileReader(id int, filename string, bufferSize int) *reverseFileReader {
 	return &reverseFileReader{
 		id:       id,
-		filename: filename,
-		buf:      make([]hashDigest, BufferSize),
+		filename: filename + strconv.Itoa(id),
+		buf:      make([]hashDigest, bufferSize),
 		position: 0,
 		limit:    0,
-		capacity: BufferSize,
+		capacity: bufferSize,
 	}
 }
 

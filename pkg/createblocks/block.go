@@ -23,16 +23,38 @@ type Block struct {
 	Hashes []hashDigest
 }
 
+func (current hashDigest) Less(other hashDigest) bool {
+	// Treat an empty hashDigest as greater than,
+	// this allows non empty hashDigest to be inserted before empty ones.
+	if current == (hashDigest{}) {
+		return false
+	} else if other == (hashDigest{}) {
+		return true
+	}
+
+	for i := CompStart; i < CompStart+CompLength; i++ {
+		currentI, otherI := current[i], other[i]
+		if currentI < otherI {
+			return true
+		} else if currentI > otherI {
+			return false
+		}
+	}
+	return false // equal
+}
+
 func (b *Block) createSubBlock(startSubBlock, endSubBlock, startBlock int, finished chan error) {
 	defer func() {
 		if r := recover(); r != nil {
 			finished <- r.(error)
 		}
 	}()
+
 	for i := startSubBlock; i <= endSubBlock; i++ {
 		serialNumber := fmt.Sprintf("%016x\n", i)
 		b.Hashes[i-startBlock] = md5.Sum([]byte(serialNumber))
 	}
+
 	finished <- nil
 }
 
@@ -43,7 +65,7 @@ func (b *Block) writeToFile(filename string, bufferSize int) error {
 	}
 	defer func() {
 		file.Close()
-		b.clear() // remove reference of Hashes so that it can be garbage collected
+		b.clear() // remove reference to Hashes so that it can be garbage collected
 	}()
 
 	writer := bufio.NewWriterSize(file, bufferSize)
@@ -72,6 +94,8 @@ func (b *Block) clear() {
 func (b Block) Len() int {
 	return len(b.Hashes)
 }
+
+// TODO: More effective if it is turned into int instead and compared after?
 func (b Block) Less(i, j int) bool {
 	for k := CompStart; k < CompStart+CompLength; k++ {
 		currentI, currentJ := b.Hashes[i][k], b.Hashes[j][k]
