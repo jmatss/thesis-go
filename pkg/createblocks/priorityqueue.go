@@ -25,11 +25,11 @@ func (pq priorityQueue) Len() int {
 }
 
 func (pq priorityQueue) Less(i, j int) bool {
-	// Treat an empty/nil *hashDigestWithID as greater than,
-	// this allows non empty hashDigestWithID to be inserted before empty ones.
-	if pq[i] == nil {
+	// Treat an empty hashDigest as greater than,
+	// this allows non empty hashDigest to "float to the top" and be pop'ed before empty ones
+	if pq[i].Digest == (hashDigest{}) {
 		return false
-	} else if pq[j] == nil {
+	} else if pq[j].Digest == (hashDigest{}) {
 		return true
 	}
 
