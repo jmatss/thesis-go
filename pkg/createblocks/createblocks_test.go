@@ -23,14 +23,13 @@ func TestCreate(t *testing.T) {
 	bufferSize := 1024
 
 	if _, err := Create(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename); err != nil {
-		t.Errorf("could not create blocks: %v", err)
+		t.Fatalf("could not create blocks: %v", err)
 	}
 
 	filename = filename + strconv.Itoa(0)
 	file, err := os.Open(filename)
 	if err != nil {
-		t.Errorf("couldn't open file \"%s\"", filename)
-		return
+		t.Fatalf("couldn't open file \"%s\"", filename)
 	}
 	defer func() {
 		file.Close()
@@ -40,13 +39,11 @@ func TestCreate(t *testing.T) {
 
 	stat, err := file.Stat()
 	if err != nil {
-		t.Errorf("couldn't get stat of file \"%s\"", filename)
-		return
+		t.Fatalf("couldn't get stat of file \"%s\"", filename)
 	}
 	if int64(end-start+1)*md5.Size != stat.Size() {
-		t.Errorf("length of file \"%s\" on disk is incorrect: "+
+		t.Fatalf("length of file \"%s\" on disk is incorrect: "+
 			"expected %d, got %d", filename, int64(end-start+1)*md5.Size, stat.Size())
-		return
 	}
 
 	/*
@@ -61,7 +58,7 @@ func TestCreate(t *testing.T) {
 			if err == io.EOF {
 				break
 			}
-			t.Errorf("couldn't read from file \"%s\"", filename)
+			t.Fatalf("couldn't read from file \"%s\"", filename)
 		}
 		totReadBytes += readBytes
 		b.Hashes[i] = digest
