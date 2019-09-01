@@ -11,7 +11,7 @@ import (
 const (
 	MaxAmountOfConcurrentThreads = 8
 	AmountOfBlocks               = 4
-	Filename                     = "d:\\listdir\\list"
+	Filename                     = "list"
 	BlockBufferSize              = 1e6 // max buffer size for block(s)
 	PrintAmount                  = 1e7 // print status message every "PrintAmount" merge iteration
 )
@@ -24,7 +24,7 @@ func main() {
 
 	/*
 		STAGE 1 - Create blocks of a size that can fit simultaneously in memory
-		Generate, sort and write hashes of the block to separate files
+		Generate, sort and write hashes of the blocks to separate files
 	*/
 	startTime := time.Now()
 	blocks, err := createsortedwordlist.Create(start, end, AmountOfBlocks, MaxAmountOfConcurrentThreads, BlockBufferSize, Filename)
@@ -38,7 +38,7 @@ func main() {
 	log.Printf("All blocks created, elapsed time: %v\n\n", time.Since(startTime))
 
 	/*
-		STAGE 2 - Merge the blocks into one single sorted file
+		STAGE 2 - Merge the blocks into one single sorted file "FileName"
 	*/
 	startTime = time.Now()
 	size, err := createsortedwordlist.Merge(blocks, MaxAmountOfConcurrentThreads, BlockBufferSize, Filename, PrintAmount)

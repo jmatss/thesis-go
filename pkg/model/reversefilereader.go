@@ -65,6 +65,7 @@ func (reader *ReverseFileReader) Read() (HashDigest, error) {
 	return result, nil
 }
 
+// Refills the buffer with hashes from disk
 func (reader *ReverseFileReader) Refill() error {
 	file, err := os.OpenFile(reader.filename, os.O_RDWR, 0644)
 	if err != nil {

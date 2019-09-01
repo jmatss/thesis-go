@@ -10,8 +10,7 @@ import (
 )
 
 // Creates blocks and returns the amount of blocks created if they are created successfully
-// TODO: make new function that combines this function and createBlock
-// TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time
+// TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time (?)
 func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) (int, error) {
 	blocks := make([]*model.Block, amountOfBlocks)
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
@@ -43,6 +42,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 	return len(blocks), nil
 }
 
+// Creates one block and returns a pointer to it
 func CreateBlock(id, start, end, amountOfThreads int) *model.Block {
 	block := model.Block{id, start, end, make([]model.HashDigest, end-start+1)}
 

@@ -1,7 +1,5 @@
 package model
 
-// TODO: Make priorityqueue synchronized and blocking!
-
 type HashDigestWithID struct {
 	Id     int
 	Digest HashDigest

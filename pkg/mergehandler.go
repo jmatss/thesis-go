@@ -7,6 +7,9 @@ import (
 	"github.com/jmatss/thesis-go/pkg/model"
 )
 
+// Takes care of all comparison logic during merging.
+// Creates multiple goprocess that will do parts of the comparison and return the results to this handler.
+// The handler will return the "smallest" hash of those to the main thread via a channel.
 func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filename string, minResult chan model.HashDigest) {
 	if amountOfBlocks < concurrentThreads {
 		concurrentThreads = amountOfBlocks
@@ -50,6 +53,8 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 	}
 }
 
+// A goprocess that will do all comparisons and reads from blocks "startBlockID" through "endBlockID".
+// It will return the current "smallest" one of all its blocks to its parent "MergeHandler" via a channel.
 func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename string, minResult chan model.HashDigest) {
 	amountOfBlocks := endBlockID - startBlockID + 1
 	blockReaders := make([]*model.ReverseFileReader, amountOfBlocks)
@@ -58,7 +63,12 @@ func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename stri
 	// and also putting the "smallest" hash from every block into the pq
 	for i := 0; i < amountOfBlocks; i++ {
 		blockReaders[i] = model.NewReverseFileReader(startBlockID+i, filename, bufferSizePerBlock)
-		(*blockReaders[i]).Refill()
+		// TODO: a better way to do this error detection, so that it can be traced back to here
+		if err := (*blockReaders[i]).Refill(); err != nil {
+			minResult <- model.HashDigest{}
+			break
+		}
+
 	}
 
 	// will loop until there are no more hashes on disk from these blocks

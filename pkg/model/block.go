@@ -95,7 +95,6 @@ func (b Block) Len() int {
 	return len(b.Hashes)
 }
 
-// TODO: More effective if it is turned into int instead and compared after?
 func (b Block) Less(i, j int) bool {
 	for k := CompStart; k < CompStart+CompLength; k++ {
 		currentI, currentJ := b.Hashes[i][k], b.Hashes[j][k]

@@ -12,6 +12,8 @@ import (
 
 const WriterBufferSize = 1000
 
+// Merges all sorted files named "filename+i" into one single sorted file called "filename"
+// Returns the size of the new file on disk in bytes
 func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename string, printAmount int) (int, error) {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -19,9 +21,7 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 	}
 
 	writeBuffer := bufio.NewWriterSize(file, WriterBufferSize)
-	defer func() {
-		file.Close()
-	}()
+	defer file.Close()
 
 	// start handler that will do all comparison/merging
 	// this main thread will fetch the min from the minResult channel and do a buffered file write
