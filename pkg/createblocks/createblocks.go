@@ -13,7 +13,6 @@ import (
 func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) (int, error) {
 	blocks := make([]*Block, amountOfBlocks)
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
-	totTime := time.Now()
 
 	currentStart := start
 	for i := 0; i < amountOfBlocks; i++ {
@@ -23,22 +22,21 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 			currentEnd = end // last iteration, take rest of hashes
 		}
 		blocks[i] = CreateBlock(i, currentStart, currentEnd, amountOfThreads)
-		log.Printf("Create block: %v", time.Since(startTime))
+		log.Printf("Created block%d, elapsed time: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
 		blocks[i].Sort()
-		log.Printf("Block sorted: %v", time.Since(startTime))
+		log.Printf(" Block%d sorted: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
 		err := blocks[i].writeToFile(filename+strconv.Itoa(i), bufferSize)
 		if err != nil {
 			return 0, fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err)
 		}
-		log.Printf("Block written to file: %v", time.Since(startTime))
+		log.Printf(" Block%d written to file: %v", i, time.Since(startTime))
 
 		currentStart = currentEnd + 1
 	}
-	log.Printf("Tot elapsed time: %v", time.Since(totTime))
 
 	return len(blocks), nil
 }
