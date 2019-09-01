@@ -2,6 +2,7 @@ package createblocks
 
 import (
 	"container/heap"
+	"log"
 )
 
 func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filename string, minResult chan hashDigest) {
@@ -9,12 +10,10 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 		concurrentThreads = amountOfBlocks
 	}
 
-	//pq := make(priorityQueue, concurrentThreads)
 	var pq priorityQueue
 	blockResults := make([]chan hashDigest, concurrentThreads)
 
-	// init
-	blockRange := amountOfBlocks / concurrentThreads // ~amount of blocks per worker
+	blockRange := (amountOfBlocks / concurrentThreads) - 1 // ~amount of blocks per worker
 	currentStart := 0
 	for i := 0; i < concurrentThreads; i++ {
 		currentEnd := currentStart + blockRange
@@ -23,8 +22,9 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 		}
 
 		blockResults[i] = make(chan hashDigest)
-
 		go mergeThread(currentStart, currentEnd, blockBufferSize/amountOfBlocks, filename, blockResults[i])
+
+		currentStart = currentEnd + 1
 	}
 
 	// load smallest hash from all threads into pq
@@ -34,18 +34,18 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 
 	for {
 		minDigestWithID := heap.Pop(&pq).(*hashDigestWithID)
-		// if true: empty, i.e. this thread has gone through all its hashes on file
-		// remove this thread and continue without it (could also decrease pq, but not implemented)
-		if minDigestWithID.Digest == (hashDigest{}) {
-			blockResults[minDigestWithID.Id] = blockResults[len(blockResults)-1]
-			blockResults = blockResults[0 : len(blockResults)-1]
-		}
 
 		// send min result to "main thread" through this channel
 		// will send empty hashDigest when finished
 		minResult <- minDigestWithID.Digest
-	}
 
+		// if the min is empty, all elements in the pq are empty and all "mergeThread"s are done, exit
+		if minDigestWithID.Digest == (hashDigest{}) {
+			break
+		}
+		// else, add next digest from same thread into pq
+		heap.Push(&pq, &hashDigestWithID{minDigestWithID.Id, <-blockResults[minDigestWithID.Id]})
+	}
 }
 
 func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename string, minResult chan hashDigest) {
@@ -87,4 +87,6 @@ func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename stri
 			break
 		}
 	}
+
+	log.Printf(" mergeThread for blocks %d through %d done.", startBlockID, endBlockID)
 }
