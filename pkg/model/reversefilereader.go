@@ -1,4 +1,4 @@
-package createblocks
+package model
 
 import (
 	"crypto/md5"
@@ -13,40 +13,40 @@ import (
 //
 // TODO: read new hashes from file in a new goprocess?
 // 	might not make a big difference since it will most likely be disk IO bound
-type reverseFileReader struct {
+type ReverseFileReader struct {
 	id       int
 	filename string
-	buf      []hashDigest
+	buf      []HashDigest
 	position int
 	limit    int
 	capacity int
 }
 
-// Creates a new reverseFileReader for the specified file.
+// Creates a new ReverseFileReader for the specified file.
 //
 // position: current index of the buffer where the next "Read" will read from.
 // limit: index of the last valid item in the buffer.
 // capacity: max capacity of the buffer.
-func NewReverseFileReader(id int, filename string, bufferSize int) *reverseFileReader {
-	return &reverseFileReader{
+func NewReverseFileReader(id int, filename string, bufferSize int) *ReverseFileReader {
+	return &ReverseFileReader{
 		id:       id,
 		filename: filename + strconv.Itoa(id),
-		buf:      make([]hashDigest, bufferSize),
+		buf:      make([]HashDigest, bufferSize),
 		position: 0,
 		limit:    0,
 		capacity: bufferSize,
 	}
 }
 
-// Returns the hashDigest at the front of the buffer.
-func (reader *reverseFileReader) Peek() hashDigest {
+// Returns the HashDigest at the front of the buffer.
+func (reader *ReverseFileReader) Peek() HashDigest {
 	return reader.buf[reader.position]
 }
 
-// Returns the hashDigest at the front of the buffer and increments the position.
+// Returns the HashDigest at the front of the buffer and increments the position.
 // If the buffer is empty, it will either be refilled or
 // an io.EOF will be returned if there are no more hashes in the file on disk
-func (reader *reverseFileReader) Read() (hashDigest, error) {
+func (reader *ReverseFileReader) Read() (HashDigest, error) {
 	result := reader.buf[reader.position]
 	reader.position++
 
@@ -55,17 +55,17 @@ func (reader *reverseFileReader) Read() (hashDigest, error) {
 	// 	instead of the else if (does it matter(?))
 	if reader.position == reader.capacity {
 		if err := reader.Refill(); err != nil {
-			return hashDigest{}, err
+			return HashDigest{}, err
 		}
 		reader.position = 0
 	} else if reader.position == reader.limit+1 {
-		return hashDigest{}, io.EOF
+		return HashDigest{}, io.EOF
 	}
 
 	return result, nil
 }
 
-func (reader *reverseFileReader) Refill() error {
+func (reader *ReverseFileReader) Refill() error {
 	file, err := os.OpenFile(reader.filename, os.O_RDWR, 0644)
 	if err != nil {
 		return fmt.Errorf("could not open file %s: %v", reader.filename, err)
@@ -117,7 +117,7 @@ func (reader *reverseFileReader) Refill() error {
 	reader.position = 0
 	reader.limit = n / md5.Size
 	for i := 0; i < reader.limit; i++ {
-		var digest hashDigest
+		var digest HashDigest
 		for j := 0; j < md5.Size; j++ {
 			digest[j] = result[i*md5.Size+j]
 		}

@@ -1,17 +1,19 @@
-package createblocks
+package createsortedwordlist
 
 import (
 	"fmt"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/jmatss/thesis-go/pkg/model"
 )
 
 // Creates blocks and returns the amount of blocks created if they are created successfully
 // TODO: make new function that combines this function and createBlock
 // TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time
 func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) (int, error) {
-	blocks := make([]*Block, amountOfBlocks)
+	blocks := make([]*model.Block, amountOfBlocks)
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
 
 	currentStart := start
@@ -29,7 +31,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 		log.Printf(" Block%d sorted: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
-		err := blocks[i].writeToFile(filename+strconv.Itoa(i), bufferSize)
+		err := blocks[i].WriteToFile(filename+strconv.Itoa(i), bufferSize)
 		if err != nil {
 			return 0, fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err)
 		}
@@ -41,8 +43,8 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 	return len(blocks), nil
 }
 
-func CreateBlock(id, start, end, amountOfThreads int) *Block {
-	block := Block{id, start, end, make([]hashDigest, end-start+1)}
+func CreateBlock(id, start, end, amountOfThreads int) *model.Block {
+	block := model.Block{id, start, end, make([]model.HashDigest, end-start+1)}
 
 	finished := make(chan error)
 	hashesPerThread := ((end - start + 1) / amountOfThreads) - 1
@@ -58,7 +60,7 @@ func CreateBlock(id, start, end, amountOfThreads int) *Block {
 			currentEnd = end
 		}
 
-		go block.createSubBlock(currentStart, currentEnd, start, finished)
+		go block.CreateSubBlock(currentStart, currentEnd, start, finished)
 		currentStart = currentEnd + 1
 	}
 

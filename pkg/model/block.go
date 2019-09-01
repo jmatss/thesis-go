@@ -1,4 +1,4 @@
-package createblocks
+package model
 
 import (
 	"bufio"
@@ -14,21 +14,21 @@ const (
 	CompLength = 6
 )
 
-type hashDigest [md5.Size]byte
+type HashDigest [md5.Size]byte
 
 type Block struct {
-	id     int
-	start  int
-	end    int
-	Hashes []hashDigest
+	Id     int
+	Start  int
+	End    int
+	Hashes []HashDigest
 }
 
-func (current hashDigest) Less(other hashDigest) bool {
-	// Treat an empty hashDigest as greater than,
-	// this allows non empty hashDigest to be inserted before empty ones.
-	if current == (hashDigest{}) {
+func (current HashDigest) Less(other HashDigest) bool {
+	// Treat an empty HashDigest as greater than,
+	// this allows non empty HashDigest to be inserted before empty ones.
+	if current == (HashDigest{}) {
 		return false
-	} else if other == (hashDigest{}) {
+	} else if other == (HashDigest{}) {
 		return true
 	}
 
@@ -43,7 +43,7 @@ func (current hashDigest) Less(other hashDigest) bool {
 	return false // equal
 }
 
-func (b *Block) createSubBlock(startSubBlock, endSubBlock, startBlock int, finished chan error) {
+func (b *Block) CreateSubBlock(startSubBlock, endSubBlock, startBlock int, finished chan error) {
 	defer func() {
 		if r := recover(); r != nil {
 			finished <- r.(error)
@@ -51,14 +51,14 @@ func (b *Block) createSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 	}()
 
 	for i := startSubBlock; i <= endSubBlock; i++ {
-		serialNumber := fmt.Sprintf("%016x\n", i)
+		serialNumber := fmt.Sprintf("%016x\n", i) // TODO: slow (change for better performance)
 		b.Hashes[i-startBlock] = md5.Sum([]byte(serialNumber))
 	}
 
 	finished <- nil
 }
 
-func (b *Block) writeToFile(filename string, bufferSize int) error {
+func (b *Block) WriteToFile(filename string, bufferSize int) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err

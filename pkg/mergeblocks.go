@@ -1,4 +1,4 @@
-package createblocks
+package createsortedwordlist
 
 import (
 	"bufio"
@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/jmatss/thesis-go/pkg/model"
 )
 
 const WriterBufferSize = 1000
@@ -23,7 +25,7 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 
 	// start handler that will do all comparison/merging
 	// this main thread will fetch the min from the minResult channel and do a buffered file write
-	minResult := make(chan hashDigest)
+	minResult := make(chan model.HashDigest)
 	go MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize, filename, minResult)
 
 	count := 0
@@ -31,7 +33,7 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 		// if min empty: time to exit, everything done
 		// TODO: can not be sure that all hashes has been merged, implement better error detection
 		min := <-minResult
-		if min == (hashDigest{}) {
+		if min == (model.HashDigest{}) {
 			break
 		}
 

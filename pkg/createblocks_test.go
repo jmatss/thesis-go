@@ -1,4 +1,4 @@
-package createblocks
+package createsortedwordlist
 
 import (
 	"crypto/md5"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/jmatss/thesis-go/pkg/model"
 )
 
 func TestCreate(t *testing.T) {
@@ -50,7 +52,7 @@ func TestCreate(t *testing.T) {
 		Test to make sure that the list is sorted and can be read (somewhat) correctly
 	*/
 	totReadBytes := 0
-	b := Block{0, start, end, make([]hashDigest, end-start+1)}
+	b := model.Block{0, start, end, make([]model.HashDigest, end-start+1)}
 	for i := 0; i < end-start+1; i++ {
 		var digest [md5.Size]byte
 		readBytes, err := file.Read(digest[:])

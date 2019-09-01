@@ -1,4 +1,4 @@
-package createblocks
+package model
 
 import (
 	"crypto/md5"
@@ -12,10 +12,10 @@ func TestCreateSubBlock(t *testing.T) {
 	*/
 	start := 0
 	end := 10
-	b := Block{0, start, end, make([]hashDigest, end-start+1)}
+	b := Block{0, start, end, make([]HashDigest, end-start+1)}
 	finished := make(chan error)
 
-	go b.createSubBlock(start, end, start, finished)
+	go b.CreateSubBlock(start, end, start, finished)
 
 	err := <-finished
 	if err != nil {
@@ -35,10 +35,10 @@ func TestCreateSubBlock(t *testing.T) {
 	}
 
 	/*
-		Test []hashDigest to small, doesn't fit all vals, should receive error
+		Test []HashDigest to small, doesn't fit all vals, should receive error
 	*/
-	b = Block{0, start, end, make([]hashDigest, end-start+1-3)}
-	go b.createSubBlock(start, end, start, finished)
+	b = Block{0, start, end, make([]HashDigest, end-start+1-3)}
+	go b.CreateSubBlock(start, end, start, finished)
 	err = <-finished
 	if err == nil {
 		t.Errorf("did not received error over chan from Block.createSubBlock: %+v", err)
@@ -46,7 +46,7 @@ func TestCreateSubBlock(t *testing.T) {
 
 }
 
-func getExpectedHashDigests() []hashDigest {
+func getExpectedHashDigests() []HashDigest {
 	expectedHashes := []string{
 		"9f9a6db9e2b3c0a5c03984eed1adf9f6",
 		"18e981ca082b9725af58098c457a6836",
@@ -60,7 +60,7 @@ func getExpectedHashDigests() []hashDigest {
 		"736754e20944459aab5326897f3d3f1b",
 		"15e0b103b82b8ab3bbf58f8059ad489d",
 	}
-	expectedHashDigests := make([]hashDigest, len(expectedHashes))
+	expectedHashDigests := make([]HashDigest, len(expectedHashes))
 	var tmpBytes []byte
 	var tmpHashDigest [md5.Size]byte
 	for i := 0; i < len(expectedHashes); i++ {
