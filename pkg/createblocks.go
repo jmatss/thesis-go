@@ -26,7 +26,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 		log.Printf("Created block%d, elapsed time: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
-		blocks[i].Sort()
+		blocks[i].Sort(amountOfThreads)
 		log.Printf(" Block%d sorted: %v", i, time.Since(startTime))
 
 		startTime = time.Now()

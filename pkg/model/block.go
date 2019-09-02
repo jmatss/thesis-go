@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"os"
-	"sort"
 )
 
 const (
@@ -81,9 +80,9 @@ func (b *Block) WriteToFile(filename string, bufferSize int) error {
 	return nil
 }
 
-func (b *Block) Sort() {
+func (b *Block) Sort(amountOfThreads int) {
 	// TODO: make sort parallel
-	sort.Sort(sort.Reverse(b))
+	b.quicksort(0, b.Len()-1)
 }
 
 func (b *Block) clear() {
@@ -106,6 +105,32 @@ func (b Block) Less(i, j int) bool {
 	}
 	return false // equal
 }
+
 func (b Block) Swap(i, j int) {
 	b.Hashes[i], b.Hashes[j] = b.Hashes[j], b.Hashes[i]
+}
+
+// DESC
+func (b *Block) quicksort(low, high int) {
+	if low >= high {
+		return
+	}
+
+	current := low
+	pivot := high
+	gtPivot := low
+
+	for current < pivot {
+		if b.Less(pivot, current) { // current >= pivot
+			b.Swap(current, gtPivot)
+			gtPivot++
+		}
+		current++
+	}
+
+	b.Swap(pivot, gtPivot) // pivot == current at this point
+
+	pivot = gtPivot
+	b.quicksort(low, pivot-1)
+	b.quicksort(pivot+1, high)
 }
