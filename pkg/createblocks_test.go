@@ -20,11 +20,10 @@ func TestCreate(t *testing.T) {
 	*/
 	start := 0
 	end := 256
-	const amountOfBlocks = 1
 	amountOfThreads := 4
-	bufferSize := 1024
+	bufferSize := end - start + 1
 
-	if _, err := Create(start, end, amountOfBlocks, amountOfThreads, bufferSize, filename); err != nil {
+	if _, err := Create(start, end, amountOfThreads, bufferSize, filename); err != nil {
 		t.Fatalf("could not create blocks: %v", err)
 	}
 
