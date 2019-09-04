@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"os"
+	"sync"
 )
 
 const (
@@ -81,8 +82,7 @@ func (b *Block) WriteToFile(filename string, bufferSize int) error {
 }
 
 func (b *Block) Sort(amountOfThreads int) {
-	// TODO: make sort parallel
-	b.quicksort(0, b.Len()-1)
+	b.quicksort(0, b.Len()-1, make(chan struct{}, amountOfThreads))
 }
 
 func (b *Block) clear() {
@@ -110,8 +110,8 @@ func (b Block) Swap(i, j int) {
 	b.Hashes[i], b.Hashes[j] = b.Hashes[j], b.Hashes[i]
 }
 
-// DESC
-func (b *Block) quicksort(low, high int) {
+// DESC order, uses "highest/right most" element as pivot
+func (b *Block) quicksort(low, high int, semaphore chan struct{}) {
 	if low >= high {
 		return
 	}
@@ -120,7 +120,7 @@ func (b *Block) quicksort(low, high int) {
 	pivot := high
 	gtPivot := low
 
-	for current < pivot {
+	for current < high {
 		if b.Less(pivot, current) { // current >= pivot
 			b.Swap(current, gtPivot)
 			gtPivot++
@@ -129,8 +129,28 @@ func (b *Block) quicksort(low, high int) {
 	}
 
 	b.Swap(pivot, gtPivot) // pivot == current at this point
-
 	pivot = gtPivot
-	b.quicksort(low, pivot-1)
-	b.quicksort(pivot+1, high)
+
+	//  if semaphore allows: spawn two child quick sorts in new processes
+	//  else: continue to do sorting in this go process
+	select {
+	case semaphore <- struct{}{}:
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+
+		go func() {
+			b.quicksort(low, pivot-1, semaphore)
+			wg.Done()
+		}()
+		go func() {
+			b.quicksort(pivot+1, high, semaphore)
+			wg.Done()
+		}()
+
+		wg.Wait()
+		<-semaphore
+	default:
+		b.quicksort(low, pivot-1, semaphore)
+		b.quicksort(pivot+1, high, semaphore)
+	}
 }
