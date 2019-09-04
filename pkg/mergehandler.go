@@ -7,10 +7,6 @@ import (
 	"github.com/jmatss/thesis-go/pkg/model"
 )
 
-const (
-	ChanSize = 10
-)
-
 // Takes care of all comparison logic during merging.
 // Creates multiple goprocess that will do parts of the comparison and return the results to this handler.
 // The handler will return the "smallest" hash of those to the main thread via a channel.
@@ -30,7 +26,7 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 			currentEnd = amountOfBlocks - 1
 		}
 
-		blockResults[i] = make(chan model.HashDigest, ChanSize)
+		blockResults[i] = make(chan model.HashDigest, ChanSize/concurrentThreads)
 		go mergeThread(currentStart, currentEnd, blockBufferSize/amountOfBlocks, filename, blockResults[i])
 
 		currentStart = currentEnd + 1

@@ -10,7 +10,11 @@ import (
 	"github.com/jmatss/thesis-go/pkg/model"
 )
 
-const WriterBufferSize = 1000
+const (
+	// arbitrary chosen sizes
+	WriterBufferSize = 16384
+	ChanSize         = 16384
+)
 
 // Merges all sorted files named "filename+i" into one single sorted file called "filename"
 // Returns the size of the new file on disk in bytes
@@ -25,7 +29,7 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 
 	// start handler that will do all comparison/merging
 	// this main thread will fetch the min from the minResult channel and do a buffered file write
-	minResult := make(chan model.HashDigest)
+	minResult := make(chan model.HashDigest, ChanSize)
 	go MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize, filename, minResult)
 
 	count := 0
