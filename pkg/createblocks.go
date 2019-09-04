@@ -11,10 +11,11 @@ import (
 
 // Creates blocks and returns the amount of blocks created if they are created successfully
 // TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time (?)
-func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filename string) (int, error) {
+func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, error) {
+	amountOfBlocks := (end - start + 1) / bufferSize // blocks needed to generate and sort all hashes
 	blocks := make([]*model.Block, amountOfBlocks)
-	hashesPerBlock := (end - start + 1) / amountOfBlocks
 
+	hashesPerBlock := (end - start + 1) / amountOfBlocks
 	currentStart := start
 	for i := 0; i < amountOfBlocks; i++ {
 		startTime := time.Now()
@@ -30,7 +31,7 @@ func Create(start, end, amountOfBlocks, amountOfThreads, bufferSize int, filenam
 		log.Printf(" Block%d sorted: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
-		err := blocks[i].WriteToFile(filename+strconv.Itoa(i), bufferSize)
+		err := blocks[i].WriteToFile(filename + strconv.Itoa(i))
 		if err != nil {
 			return 0, fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err)
 		}
