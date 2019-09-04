@@ -10,8 +10,9 @@ import (
 
 const (
 	/* The md5 digest is 16 bytes. Compare the last 6 bytes (CompLength) that starts at byte 10 (CompStart) */
-	CompStart  = 10
-	CompLength = 6
+	CompStart        = 10
+	CompLength       = 6
+	WriterBufferSize = 1 << 16
 )
 
 type HashDigest [md5.Size]byte
@@ -58,7 +59,7 @@ func (b *Block) CreateSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 	finished <- nil
 }
 
-func (b *Block) WriteToFile(filename string, bufferSize int) error {
+func (b *Block) WriteToFile(filename string) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -68,7 +69,7 @@ func (b *Block) WriteToFile(filename string, bufferSize int) error {
 		b.clear() // remove reference to Hashes so that it can be garbage collected
 	}()
 
-	writer := bufio.NewWriterSize(file, bufferSize)
+	writer := bufio.NewWriterSize(file, WriterBufferSize)
 	for i := 0; i < len(b.Hashes); i++ {
 		if _, err := writer.Write(b.Hashes[i][:]); err != nil {
 			return err
