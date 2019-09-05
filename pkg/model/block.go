@@ -139,14 +139,14 @@ func (b *Block) quicksort(low, high int, semaphore chan struct{}) {
 		wg := sync.WaitGroup{}
 		wg.Add(2)
 
-		go func() {
-			b.quicksort(low, pivot-1, semaphore)
+		go func(low, high int) {
+			b.quicksort(low, high, semaphore)
 			wg.Done()
-		}()
-		go func() {
-			b.quicksort(pivot+1, high, semaphore)
+		}(low, pivot-1)
+		go func(low, high int) {
+			b.quicksort(low, high, semaphore)
 			wg.Done()
-		}()
+		}(pivot+1, high)
 
 		wg.Wait()
 		<-semaphore
