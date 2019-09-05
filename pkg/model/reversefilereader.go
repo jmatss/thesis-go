@@ -57,7 +57,6 @@ func (reader *ReverseFileReader) Read() (HashDigest, error) {
 		if err := reader.Refill(); err != nil {
 			return HashDigest{}, err
 		}
-		reader.position = 0
 	} else if reader.position == reader.limit+1 {
 		return HashDigest{}, io.EOF
 	}
