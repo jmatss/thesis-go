@@ -2,7 +2,6 @@ package createsortedwordlist
 
 import (
 	"container/heap"
-	"log"
 
 	"github.com/jmatss/thesis-go/pkg/model"
 )
@@ -29,12 +28,10 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 		blockResults[i] = make(chan model.HashDigest, ChanSize/concurrentThreads)
 		go mergeThread(currentStart, currentEnd, blockBufferSize/amountOfBlocks, filename, blockResults[i])
 
-		currentStart = currentEnd + 1
-	}
+		// load smallest hash from thread into pq
+		heap.Push(&pq, &model.HashDigestWithID{i, <-blockResults[i]})
 
-	// load smallest hash from all threads into pq
-	for i, blockResult := range blockResults {
-		heap.Push(&pq, &model.HashDigestWithID{i, <-blockResult})
+		currentStart = currentEnd + 1
 	}
 
 	for {
@@ -58,47 +55,41 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename string, minResult chan model.HashDigest) {
 	amountOfBlocks := endBlockID - startBlockID + 1
 	blockReaders := make([]*model.ReverseFileReader, amountOfBlocks)
+	var pq model.PriorityQueue
 
 	// init the readers by reading in the first hashes from file into buffers
 	// and also putting the "smallest" hash from every block into the pq
+	// TODO: a better way to do this error detection, so that it can be traced back to here
 	for i := 0; i < amountOfBlocks; i++ {
 		blockReaders[i] = model.NewReverseFileReader(startBlockID+i, filename, bufferSizePerBlock)
-		// TODO: a better way to do this error detection, so that it can be traced back to here
+
 		if err := (*blockReaders[i]).Refill(); err != nil {
 			minResult <- model.HashDigest{}
 			break
 		}
 
+		digest, err := (*blockReaders[i]).Read()
+		if err != nil {
+			minResult <- model.HashDigest{}
+			break
+		}
+		heap.Push(&pq, &model.HashDigestWithID{i, digest})
 	}
 
 	// will loop until there are no more hashes on disk from these blocks
 	for {
-		minIndex := 0
-		minDigest := (*blockReaders[0]).Peek()
+		min := heap.Pop(&pq).(*model.HashDigestWithID)
+		minResult <- min.Digest
 
-		for i := 0; i < amountOfBlocks; i++ {
-			currentDigest := (*blockReaders[i]).Peek()
-			if currentDigest.Less(minDigest) {
-				minIndex = i
-				minDigest = currentDigest
-			}
-		}
-
-		minDigest, err := (*blockReaders[minIndex]).Read()
-		if err != nil {
-			// return an empty hashDigest as an indicator for the main thread to stop fetching hashes from this thread
-			// the main thread can then see that the filesize is incorrect and in that way see that an error has occurred
-			// TODO: a better way to do this error detection, so that it can be traced back to here
-			minResult <- model.HashDigest{}
+		if min.Digest == (model.HashDigest{}) {
 			break
 		}
 
-		minResult <- minDigest
-		// if minDigest is an empty hashDigest, there are no hashes left to compare, exit
-		if minDigest == (model.HashDigest{}) {
-			break
-		}
+		// The Read function will return an empty HashDigest if an error is returned,
+		//  so there is no reason to check the error since we would insert an empty
+		//  HashDigest into the heap anyways
+		minFromSameBlock, _ := (*blockReaders[min.Id]).Read()
+
+		heap.Push(&pq, &model.HashDigestWithID{min.Id, minFromSameBlock})
 	}
-
-	log.Printf(" mergeThread for blocks %d through %d done.", startBlockID, endBlockID)
 }
