@@ -47,7 +47,7 @@ func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, 
 func CreateBlock(id, start, end, amountOfThreads int) *model.Block {
 	block := model.Block{id, start, end, make([]model.HashDigest, end-start+1)}
 
-	finished := make(chan error)
+	finished := make(chan error, amountOfThreads)
 	hashesPerThread := ((end - start + 1) / amountOfThreads) - 1
 	// if there are fewer hashes than threads, only spawn threads so that they get one hash each
 	if hashesPerThread <= 0 {
