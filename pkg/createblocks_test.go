@@ -12,7 +12,7 @@ import (
 
 func TestCreate(t *testing.T) {
 	// remove list from previous test if needed
-	filename := "D:\\listdir\\testlist"
+	filename := "testlist"
 	os.Remove(filename + strconv.Itoa(0))
 
 	/*
