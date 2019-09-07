@@ -83,7 +83,9 @@ func (b *Block) WriteToFile(filename string) error {
 }
 
 func (b *Block) Sort(amountOfThreads int) {
-	b.quicksort(0, b.Len()-1, make(chan struct{}, amountOfThreads))
+	semaphore := make(chan struct{}, amountOfThreads)
+	b.quicksort(0, b.Len()-1, semaphore)
+	close(semaphore)
 }
 
 func (b *Block) clear() {

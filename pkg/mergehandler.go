@@ -48,6 +48,10 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 		// else, add next digest from same thread into pq
 		heap.Push(&pq, &model.HashDigestWithID{minDigestWithID.Id, <-blockResults[minDigestWithID.Id]})
 	}
+
+	for i := 0; i < len(blockResults); i++ {
+		close(blockResults[i])
+	}
 }
 
 // A goprocess that will do all comparisons and reads from blocks "startBlockID" through "endBlockID".
