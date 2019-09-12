@@ -12,7 +12,7 @@ import (
 // Creates blocks and returns the amount of blocks created if they are created successfully
 // TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time (?)
 func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, error) {
-	amountOfBlocks := (end - start + 1) / bufferSize // blocks needed to generate and sort all hashes
+	amountOfBlocks := ((end - start) / bufferSize) + 1 // blocks needed to generate and sort all hashes
 	blocks := make([]*model.Block, amountOfBlocks)
 
 	hashesPerBlock := (end - start + 1) / amountOfBlocks
