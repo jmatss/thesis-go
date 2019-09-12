@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"os"
+	"runtime"
 	"sync"
 )
 
@@ -13,6 +14,7 @@ const (
 	CompStart        = 10
 	CompLength       = 6
 	WriterBufferSize = 1 << 16
+	GcTriggerAmount  = 30 // garbage collection triggered ~"GcTriggerAmount" times per CreateSubBlock
 )
 
 type HashDigest [md5.Size]byte
@@ -51,7 +53,12 @@ func (b *Block) CreateSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 		}
 	}()
 
+	// TODO: this GC is really ugly, find some other way to do this
+	gcTrigger := (endSubBlock - startSubBlock + 1) / GcTriggerAmount
 	for i := startSubBlock; i <= endSubBlock; i++ {
+		if i%gcTrigger == 0 {
+			runtime.GC()
+		}
 		serialNumber := fmt.Sprintf("%016x\n", i) // TODO: slow (change for better performance)
 		b.Hashes[i-startBlock] = md5.Sum([]byte(serialNumber))
 	}
@@ -67,6 +74,7 @@ func (b *Block) WriteToFile(filename string) error {
 	defer func() {
 		file.Close()
 		b.clear() // remove reference to Hashes so that it can be garbage collected
+		runtime.GC()
 	}()
 
 	writer := bufio.NewWriterSize(file, WriterBufferSize)
