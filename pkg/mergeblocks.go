@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/jmatss/thesis-go/pkg/model"
+	"./model"
 )
 
 const (

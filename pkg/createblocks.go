@@ -5,8 +5,7 @@ import (
 	"log"
 	"strconv"
 	"time"
-
-	"github.com/jmatss/thesis-go/pkg/model"
+	"./model"
 )
 
 // Creates blocks and returns the amount of blocks created if they are created successfully

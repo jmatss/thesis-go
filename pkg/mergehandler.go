@@ -2,8 +2,7 @@ package createsortedwordlist
 
 import (
 	"container/heap"
-
-	"github.com/jmatss/thesis-go/pkg/model"
+	"./model"
 )
 
 // Takes care of all comparison logic during merging.

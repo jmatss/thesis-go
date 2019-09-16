@@ -6,8 +6,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
-
-	"github.com/jmatss/thesis-go/pkg/model"
+	"./model"
 )
 
 func TestCreate(t *testing.T) {
