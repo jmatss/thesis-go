@@ -10,6 +10,13 @@ import (
 // Creates multiple goprocess that will do parts of the comparison and return the results to this handler.
 // The handler will return the "smallest" hash of those to the main thread via a channel.
 func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filename string, minResult chan model.HashDigest) {
+	// prevent deadlock if panic
+	defer func() {
+		if r := recover(); r != nil {
+			minResult <- model.HashDigest{}
+		}
+	}()
+
 	if amountOfBlocks < concurrentThreads {
 		concurrentThreads = amountOfBlocks
 	}
@@ -57,6 +64,13 @@ func MergeHandler(amountOfBlocks, concurrentThreads, blockBufferSize int, filena
 // A goprocess that will do all comparisons and reads from blocks "startBlockID" through "endBlockID".
 // It will return the current "smallest" one of all its blocks to its parent "MergeHandler" via a channel.
 func mergeThread(startBlockID, endBlockID, bufferSizePerBlock int, filename string, minResult chan model.HashDigest) {
+	// prevent deadlock if panic
+	defer func() {
+		if r := recover(); r != nil {
+			minResult <- model.HashDigest{}
+		}
+	}()
+
 	amountOfBlocks := endBlockID - startBlockID + 1
 	blockReaders := make([]*model.ReverseFileReader, amountOfBlocks)
 	var pq model.PriorityQueue
