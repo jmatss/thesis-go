@@ -5,3 +5,19 @@ Proof of concept for hack on AutoPi found during bachelor thesis ([link](https:/
 The Raspberry Pi which the AutoPi is built upon, has a unique 8 character hex serial number. This number is md5 hashed into a 32 character hex string, also known as the “dongle id“, “unit id” or “minion id” [[row 9]](https://github.com/autopi-io/autopi-core/blob/3507b5ff420c9e7af3aa88b0b1cf4b68e677b36a/src/salt/base/state/minion/install.sls). The dongle id is a unique identifier of the AutoPi dongle and the first 6 bytes are used as wifi password while the last 6 bytes are used as wifi SSID. This means that one can deduce the the wifi password from the broadcasted SSID. Root access is given if connected to the AutoPi dongle via wifi. 
 
 **CreateSortedWordlist** create a wordlist of all possible hashes sorted by the last 6 bytes (the SSID). It is implemented using a external sorting algorithm and will create a file of size ~69GB.
+
+```
+Usage:
+  -filename string
+     Output filename of wordlist (default "list")
+  -start int
+     Start value of serial number (default 0)
+  -end int
+     End value of serial number (default 0xffffffff)
+  -threads int
+     Max amount of threads (default 8)
+  -buffersize int
+     Buffer size for block(s) in sizeof(hashDigest) (16 Bytes) (default 1<<28)
+  -printamount int
+     Print status message every "PrintAmount" merge iteration (default 1e7)
+```
