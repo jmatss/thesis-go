@@ -31,7 +31,7 @@ func TestCreate(t *testing.T) {
 	}
 	defer func() {
 		file.Close()
-		os.Remove(filename + strconv.Itoa(0))
+		os.Remove(filename)
 	}()
 
 	stat, err := file.Stat()
