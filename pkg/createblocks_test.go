@@ -11,13 +11,10 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	// remove list from previous test if needed
-	filename := "testlist"
-	os.Remove(filename + strconv.Itoa(0))
-
 	/*
 		Test to make sure that the file is created correctly, that the size is correct
 	*/
+	filename := "testlist"
 	start := 0
 	end := 256
 	amountOfThreads := 4
@@ -34,7 +31,6 @@ func TestCreate(t *testing.T) {
 	}
 	defer func() {
 		file.Close()
-		filename := "D:\\listdir\\testlist"
 		os.Remove(filename + strconv.Itoa(0))
 	}()
 
