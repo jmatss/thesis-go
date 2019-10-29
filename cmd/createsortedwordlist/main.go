@@ -31,19 +31,21 @@ func main() {
 	totTime := time.Now()
 
 	/*
-		STAGE 1 - Create blocks of a size that can fit simultaneously in memory
-		Generate, sort and write hashes of the blocks to separate files
+		STEP 1
+		Create blocks. Every block will contain (bufferSize / HASH_SIZE) hashes.
+		The blocks will be sorted in DESC and written to disk in files "filename + blockId"
 	*/
 	startTime := time.Now()
 	blocks, err := createsortedwordlist.Create(*start, *end, *maxThreads, *bufferSize, *filename)
 	if err != nil {
 		log.Fatalf("could not create blocks: %v", err)
 	}
-
 	log.Printf("All %d blocks created, elapsed time: %v\n\n", blocks, time.Since(startTime))
 
 	/*
-		STAGE 2 - Merge the blocks into one single sorted file "FileName"
+		STEP 2
+		Merges the blocks into one single sorted file "filename".
+		Removes hashes from disk as soon as they have been read into memory, no backup.
 	*/
 	startTime = time.Now()
 	size, err := createsortedwordlist.Merge(blocks, *maxThreads, *bufferSize, *filename, *printAmount)
@@ -55,6 +57,5 @@ func main() {
 	}
 
 	log.Printf("All blocks merged, elapsed time: %v\n\n", time.Since(startTime))
-
 	log.Printf("Everything done, total elapsed time: %v\n", time.Since(totTime))
 }
