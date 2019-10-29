@@ -10,7 +10,6 @@ import (
 )
 
 // Creates blocks and returns the amount of blocks created if they are created successfully
-// TODO: write to file in a new goprocess so that one can start with generating/sorting the next block at the same time (?)
 func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, error) {
 	amountOfBlocks := ((end - start) / bufferSize) + 1 // blocks needed to generate and sort all hashes
 	blocks := make([]*model.Block, amountOfBlocks)
@@ -23,19 +22,21 @@ func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, 
 		if i == amountOfBlocks-1 {
 			currentEnd = end // last iteration, take rest of hashes
 		}
-		blocks[i] = CreateBlock(i, currentStart, currentEnd, amountOfThreads)
+
+		currentBlock := CreateBlock(i, currentStart, currentEnd, amountOfThreads)
 		log.Printf("Created block%d, elapsed time: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
-		blocks[i].Sort(amountOfThreads)
+		currentBlock.Sort(amountOfThreads)
 		log.Printf(" Block%d sorted: %v", i, time.Since(startTime))
 
 		startTime = time.Now()
-		err := blocks[i].WriteToFile(filename + strconv.Itoa(i))
-		if err != nil {
+		if err := currentBlock.WriteToFile(filename + strconv.Itoa(i)); err != nil {
 			return 0, fmt.Errorf("unable to write block %d to file \"%s\": %v", i, filename+strconv.Itoa(i), err)
 		}
 		log.Printf(" Block%d written to file: %v", i, time.Since(startTime))
+
+		blocks[i] = currentBlock
 
 		currentStart = currentEnd + 1
 	}
@@ -45,7 +46,7 @@ func Create(start, end, amountOfThreads, bufferSize int, filename string) (int, 
 
 // Creates one block and returns a pointer to it
 func CreateBlock(id, start, end, amountOfThreads int) *model.Block {
-	block := model.Block{id, start, end, make([]model.HashDigest, end-start+1)}
+	block := model.Block{Id: id, Start: start, End: end, Hashes: make([]model.HashDigest, end-start+1)}
 
 	finished := make(chan error, amountOfThreads)
 	hashesPerThread := ((end - start + 1) / amountOfThreads) - 1
@@ -66,11 +67,11 @@ func CreateBlock(id, start, end, amountOfThreads int) *model.Block {
 	}
 
 	for i := 0; i < amountOfThreads; i++ {
-		err := <-finished
-		if err != nil {
+		if err := <-finished; err != nil {
 			panic(fmt.Errorf("unable to create block %d: %v", id, err))
 		}
 	}
 
+	close(finished)
 	return &block
 }
