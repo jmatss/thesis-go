@@ -41,12 +41,10 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 			break
 		}
 
-		n, err := writeBuffer.Write(min[:])
-		if err != nil {
+		if n, err := writeBuffer.Write(min[:]); err != nil {
 			return 0, fmt.Errorf("not able to write digest %016x to file %s: %v",
 				min, filename, err)
-		}
-		if n != md5.Size {
+		} else if n != md5.Size {
 			return 0, fmt.Errorf("incorrect amount of bytes written to file when writing "+
 				"digest %016x to file %s, expected: %d, wrote: %d: %v",
 				min, filename, md5.Size, n, err)
@@ -54,7 +52,7 @@ func Merge(amountOfBlocks, concurrentThreads, blockBufferSize int, filename stri
 
 		count++
 		if count%printAmount == 0 {
-			log.Printf("%d hashes merged", count)
+			log.Printf("%d hashes merged.", count)
 		}
 	}
 
