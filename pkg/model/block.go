@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"sync"
@@ -11,10 +12,11 @@ import (
 
 const (
 	/* The md5 digest is 16 bytes. Compare the last 6 bytes (CompLength) that starts at byte 10 (CompStart) */
-	CompStart        = 10
-	CompLength       = 6
-	WriterBufferSize = 1 << 16
-	GcTriggerAmount  = 30 // garbage collection triggered ~"GcTriggerAmount" times per CreateSubBlock
+	CompStart          = 10
+	CompLength         = 6
+	WriterBufferSize   = 1 << 16
+	GcTriggerAmount    = 30     // garbage collection triggered ~"GcTriggerAmount" times per CreateSubBlock
+	GcMinTriggerAmount = 1 << 6 // need to generate more than this amount of hashes to get "manual" gc
 )
 
 type HashDigest [md5.Size]byte
@@ -55,7 +57,11 @@ func (b *Block) CreateSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 
 	// TODO: this GC is really ugly, find some other way to do this
 	gcTrigger := (endSubBlock - startSubBlock + 1) / GcTriggerAmount
+	if (endSubBlock - startSubBlock + 1) < GcMinTriggerAmount {
+		gcTrigger = (endSubBlock - startSubBlock + 1) + 1
+	}
 	for i := startSubBlock; i <= endSubBlock; i++ {
+		log.Printf("gcTrigger: %d", gcTrigger)
 		if i%gcTrigger == 0 {
 			runtime.GC()
 		}
