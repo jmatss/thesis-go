@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"sync"
@@ -61,7 +60,6 @@ func (b *Block) CreateSubBlock(startSubBlock, endSubBlock, startBlock int, finis
 		gcTrigger = (endSubBlock - startSubBlock + 1) + 1
 	}
 	for i := startSubBlock; i <= endSubBlock; i++ {
-		log.Printf("gcTrigger: %d", gcTrigger)
 		if i%gcTrigger == 0 {
 			runtime.GC()
 		}
