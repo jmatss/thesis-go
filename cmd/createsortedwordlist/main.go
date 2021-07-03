@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/jmatss/thesis-go/pkg"
+	"../../pkg"
 )
 
 const (
